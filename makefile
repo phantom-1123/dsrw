@@ -1,5 +1,5 @@
 main: main.cpp *.h die.cc
-	g++ main.cpp die.cc -o main
+	g++ -DTEST main.cpp die.cc -o main
 
 .PHONY: test
 

@@ -1,48 +1,68 @@
 #include <iostream>
 
+#ifdef TEST
+#include <fstream>
+#define IN fin
+#define OUT fout
+#else
+#define IN std::cin
+#define OUT std::cout
+#endif //TEST
+
 #include "btree_map.h"
 
-int main(){
-    //part1
+void run_part1 (std::istream & input, std::ostream &output){
     tlx::btree_map<int, int> nmap;
     int n, m, p, q;
-    std::cin >> n >>m >>p >>q;
+    input >> n >>m >>p >>q;
     for (int i=1;i<=n;i++){
         int key, value;
-        std::cin >> key >> value;
+        input >> key >> value;
         nmap.insert(std::make_pair(key,value));
     }
 
     for (int i=1;i<=m;i++){
         int key;
-        std::cin >> key;
+        input >> key;
         auto itr = nmap.find(key);
         if (itr!=nmap.end())
-            std::cout << itr->second << std::endl;
+            output << itr->second << std::endl;
         else
-            std::cout << "NOT FOUND" << std::endl;
+            output << "NOT FOUND" << std::endl;
     }
 
     for (int i=1;i<=p;i++){
         int key,value;
-        std::cin >> key >> value;
+        input >> key >> value;
         nmap.erase(key);
         nmap.insert(std::make_pair(key,value));
     }
 
     for (int i=1;i<=q;i++){
         int lvalue,rvalue;
-        std::cin >> lvalue >> rvalue;
+        input >> lvalue >> rvalue;
         int count=0;
         auto itr_end=nmap.end();
         for (int k=lvalue; k<rvalue;k++){
             if (itr_end!=nmap.find(k))
                 count++;
         }
-        std::cout<<count<<std::endl;
+        output<<count<<std::endl;
     }
-    
+}
 
+int main(){
+    //part1
+    #ifdef TEST
+        std::ifstream fin("test.in");
+        std::ofstream fout("test_ans.out");
+    #endif //TEST
+
+    run_part1(IN,OUT);
+    
+    #ifdef TEST
+        fout.close();
+    #endif //TEST
 
     return 0;
 }

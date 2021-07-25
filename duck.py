@@ -9,10 +9,10 @@ from tqdm import tqdm
 INT_RANGE = 2147483648
 RANGE_LIMIT = INT_RANGE >> 4
 
-N = int(1e6)
-M = int(1e4)
-P = int(2e5)
-Q = int(1e2)
+N = int(1e3)
+M = int(1e2)
+P = int(2e2)
+Q = int(1e1)
 
 keys = random.sample(range(-INT_RANGE, INT_RANGE), k=N)
 values = random.choices(range(-INT_RANGE, INT_RANGE), k=N)
