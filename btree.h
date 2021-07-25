@@ -245,8 +245,18 @@ private:
     //! Pointers to children
     node *childid[inner_slotmax + 1]; // NOLINT
 
+    //! Newly added. Count the number of slots in the range in accordance with
+    //! the child pointer
+    int range_counter[inner_slotmax + 1];
+
     //! Set variables to initial values.
-    void initialize(const unsigned short l) { node::initialize(l); }
+    //! Newly added. Initialize range_counter
+    void initialize(const unsigned short l) { 
+      node::initialize(l); 
+      for (int i=0; i<=inner_slotmax; i++){
+        range_counter[i]=0;
+      }
+    }
 
     //! Return key in slot s
     const key_type &key(size_t s) const { return slotkey[s]; }
