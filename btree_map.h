@@ -162,6 +162,13 @@ private:
 
   //! \}
 
+//Newly added. Just for testing, return tree_
+#ifdef TEST
+public:
+  const btree_impl & getTree() const { return tree_; }
+
+#endif //TEST
+
 public:
   //! \name Constructors and Destructor
   //! \{
@@ -419,6 +426,15 @@ public:
   iterator insert2(iterator hint, const key_type &key, const data_type &data) {
     return tree_.insert(hint, value_type(key, data));
   }
+
+  //! Newly added. insert a key/data pair into the B+ tree. If the key already
+  //! exists, the value will be updated by the newly inserted data, and the 
+  //! return value will be false. 
+  //! Most of the code are copied from insert
+  std::pair<iterator, bool> insertRewrite(const value_type &x) {
+    return tree_.insertRewrite(x);
+  }
+
 
   //! Returns a reference to the object that is associated with a particular
   //! key. If the map does not already contain such an object, operator[]
