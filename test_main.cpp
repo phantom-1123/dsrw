@@ -9,6 +9,7 @@ void output(const tlx::btree_map<int, int> & map){
         std::cout << itr->first <<" "<< itr->second << " ";
     }
     std::cout <<"output() finished"<<std::endl;
+    std::cout <<tree.is_keyCounterCorrect()<<std::endl;
 }
 
 int main(){

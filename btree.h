@@ -313,6 +313,34 @@ private:
 
   //! \}
 
+//Newly added. Traverse the tree to see if key_counter is maintained properly
+#ifdef TEST
+public:
+  bool is_keyCounterCorrect(){
+    return keyCounterCorrectRecursive(root_);
+  }
+
+private:
+  bool keyCounterCorrectRecursive(node *n){
+    if (n->is_leafnode()){
+      return true;
+    }
+    int sum=0;
+    InnerNode * inner = static_cast<InnerNode *> (n);
+    for (int i = 0; i <= inner->slotuse; i++){
+      sum += getChildKeyuse(inner, i);
+    }
+    if (sum!=inner->key_counter){
+      return false;
+    }
+    for (int i = 0; i <= inner->slotuse; i++){
+      if(!keyCounterCorrectRecursive(inner->childid[i]))
+        return false;
+    }
+    return true;
+  }
+#endif //TEST
+
 public:
   //! \name Iterators and Reverse Iterators
   //! \{
@@ -2207,15 +2235,19 @@ private:
   void updateKeyCounter(InnerNode* inner){
     int sum = 0;
     for (int i = 0; i <= inner->slotuse; i++){
-      if (inner->childid[i]->is_leafnode()){
-        sum += inner->childid[i]->slotuse;
-      }
-      else{
-        InnerNode *child = static_cast<InnerNode *> (inner->childid[i]);
-        sum += child->key_counter;
-      } 
+      sum += getChildKeyuse(inner, i);
     }
     inner->key_counter = sum;
+  }
+
+  //! Newly added. Helper to get the Key usage of child.
+  //! Discussing problems of leaf or inner
+  int getChildKeyuse(InnerNode *inner, int slot){
+    if (inner->childid[slot]->is_leafnode()){
+      return inner->childid[slot]->slotuse;
+    }
+    InnerNode *child = static_cast<InnerNode *> (inner->childid[slot]);
+    return child->key_counter;
   }
 
   //! Newly added. insertRewrite method. If the key already
