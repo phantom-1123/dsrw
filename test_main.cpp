@@ -1,32 +1,87 @@
 #include <iostream>
+#include <fstream>
+#include <cstdio>
+
+
+#ifdef TEST
+const char input_file[1024]="testcase/1.in";
+const char out_std_file[1024]="testcase/1.out";
+const char out_file[1024]="testcase/test.out";
+void checker(){
+    std::string t,ans,ans2;
+	int i;
+	freopen(out_file,"r",stdin);
+	char c;
+	while(scanf("%c",&c)!=EOF) ans+=c;
+	fclose(stdin);
+	freopen(out_std_file,"r",stdin);
+	while(scanf("%c",&c)!=EOF) ans2+=c;;
+    freopen("/dev/console", "r", stdin);
+    freopen("testcase/result.txt", "w", stdout);
+	fclose(stdin);
+	if(ans.size()!=ans2.size()){std::cout<<"NO\n";return ;}
+	for(i=0;i<ans.size();i++)
+		if(ans[i]!=ans2[i]){std::cout<<"NO\n";return ;}
+	std::cout<<"YES\n";
+}
+#endif //TEST
+
 
 #include "btree_map.h"
 
-void output(const tlx::btree_map<int, int> & map){
-    auto tree=map.getTree();
-    std::cout <<"output() start"<<std::endl;
-    for (auto itr = tree.begin(); itr != tree.end(); itr++){
-        std::cout << itr->first <<" "<< itr->second << " ";
-    }
-    std::cout <<"output() finished"<<std::endl;
-    std::cout <<tree.is_keyCounterCorrect()<<std::endl;
-}
 
 int main(){
-    tlx::btree_map<int, int> nmap;
-    int key[4]={1,3,2,4};
-    int value[4]= {10,11,12,13};
-    for (int i=0;i<4;i++){
-        int k=key[i];
-        int v=value[i];
-        nmap.insertRewrite(std::make_pair(k,v));
-        output(nmap);
-    }
-    nmap.insertRewrite(std::make_pair(2, 15));
-    output(nmap);
-    return 0;
-    tlx::BTree<int,int,int> tree;
-    tree.find_upper(4);
-    tree.find_lower()
 
+#ifdef TEST
+    //freopen(out_file, "w", stdout);
+    freopen(input_file,"r", stdin);
+#endif
+
+    //part2
+    int n, m;
+    std::scanf("%d", &n);
+    std::scanf("%d", &m);
+    tlx::btree_map<int, int> nmap;
+    for(int i=1; i<=515; i++){
+        int key, value;
+        std::scanf("%d", &key);
+        std::scanf("%d", &value);
+        nmap.insertRewrite(std::make_pair(key,value));
+        if(! nmap.getTree().is_keyCounterCorrect()){
+            std::cout << "false at "<< i<< std::endl;
+            break;
+        }
+    }
+    //auto tree=nmap.getTree();
+    //tree.printLeafSlotuse();
+    for(int i=516; i<=n; i++){
+        int key, value;
+        std::scanf("%d", &key);
+        std::scanf("%d", &value);
+        nmap.insertRewrite(std::make_pair(key,value));
+        //std::cout << nmap.getTree().get_stats().leaves <<std::endl;
+        //nmap.getTree().printLeafSlotuse();
+        if(! nmap.getTree().is_keyCounterCorrect()){
+            std::cout << "false at "<< i<< std::endl;
+            break;
+        }
+    }
+    /*
+    for (int i=1; i<=m; i++){
+        int lvalue, rvalue;
+        std::scanf("%d", &lvalue);
+        std::scanf("%d", &rvalue);
+        std::printf("%d\n", nmap.rangeQuery(lvalue, rvalue));
+    }
+    */
+/*
+#ifdef TEST
+    //freopen("/dev/console", "r", stdin);
+    fclose(stdin);
+    fclose(stdout);
+    checker();
+#endif
+*/
+
+    return 0;
 }

@@ -3,9 +3,9 @@
 #include <cstdio>
 
 #ifdef TEST
-const char input_file[1024]="testcase/2/4.in";
-const char out_std_file[1024]="testcase/2/4.out";
-const char out_file[1024]="testcase/2/test.out";
+const char input_file[1024]="testcase/1.in";
+const char out_std_file[1024]="testcase/1.out";
+const char out_file[1024]="testcase/test.out";
 
 void checker(){
     std::string t,ans,ans2;
@@ -17,7 +17,7 @@ void checker(){
 	freopen(out_std_file,"r",stdin);
 	while(scanf("%c",&c)!=EOF) ans2+=c;;
     //freopen("/dev/console", "r", stdin);
-    freopen("testcase/2/result.txt", "w", stdout);
+    freopen("testcase/result.txt", "w", stdout);
 	fclose(stdin);
 	if(ans.size()!=ans2.size()){std::cout<<"NO\n";return ;}
 	for(i=0;i<ans.size();i++)
@@ -31,7 +31,7 @@ void checker(){
 
 int main(){
 #ifdef TEST
-    freopen("testcase/1/test.out", "w", stdout);
+    freopen(out_file, "w", stdout);
     freopen(input_file,"r", stdin);
 #endif
     //part2

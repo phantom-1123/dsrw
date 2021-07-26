@@ -316,12 +316,12 @@ private:
 //Newly added. Traverse the tree to see if key_counter is maintained properly
 #ifdef TEST
 public:
-  bool is_keyCounterCorrect(){
+  bool is_keyCounterCorrect() const{
     return keyCounterCorrectRecursive(root_);
   }
 
 private:
-  bool keyCounterCorrectRecursive(node *n){
+  bool keyCounterCorrectRecursive(node *n) const{
     if (n->is_leafnode()){
       return true;
     }
@@ -331,13 +331,37 @@ private:
       sum += getChildKeyuse(inner, i);
     }
     if (sum!=inner->key_counter){
+      std::cout << "false at level "<< inner->level <<std::endl;
       return false;
     }
     for (int i = 0; i <= inner->slotuse; i++){
-      if(!keyCounterCorrectRecursive(inner->childid[i]))
+      if(!keyCounterCorrectRecursive(inner->childid[i])){
+        std::cout << "false at level "<< inner->level <<std::endl;
         return false;
+      }
     }
     return true;
+  }
+
+public:
+  void printLeafSlotuse() const{
+    node *n=root_;
+    while (!n->is_leafnode()){
+      InnerNode *inner = static_cast<InnerNode *>(n);
+      n = inner->childid[0];
+    }
+    LeafNode *leaf=static_cast<LeafNode *>(n);
+    auto ptr=leaf;
+    //std::cout << get_stats().leaves<<std::endl;
+    //std::cout << get_stats().size<<std::endl;
+    int sum=0;
+    for (int i=1;i<=get_stats().leaves;i++){
+      std::cout << ptr->slotuse <<" ";
+      sum += ptr->slotuse;
+      ptr = ptr -> next_leaf;
+    }
+    std::cout << std::endl;
+    std::cout <<sum<<" sum == size? "<< (get_stats().size==sum) <<std::endl;
   }
 #endif //TEST
 
@@ -1404,22 +1428,23 @@ private:
 public:
   //! Newly added. Search in the interval [lvalue,rvalue).
   //! Return the number of keys in this interval
-  int rangeQuery(int lvalue, int rvalue){
+  int rangeQuery(int lvalue, int rvalue) const{
     return rangeQueryRecursive(root_, lvalue, rvalue);
   }
 
 private:
   //! Newly added. Recursivly implement rangeQuery
-  int rangeQueryRecursive(node *n, int lvalue, int rvalue){
+  int rangeQueryRecursive(node *n, int lvalue, int rvalue) const{
     if(n->is_leafnode()){
-      int l = n->find_lower(lvalue);
-      int r = n->find_lower(rvalue);
+      LeafNode *leaf = static_cast<LeafNode *>(n);
+      int l = find_lower(leaf,lvalue);
+      int r = find_lower(leaf,rvalue);
       return r-l;
     }
 
     InnerNode *inner = static_cast<InnerNode *>(n);
-    int slot_l = inner->find_lower(lvalue);
-    int slot_r = inner->find_lower(rvalue)-1; 
+    int slot_l = find_lower(inner,lvalue);
+    int slot_r = find_lower(inner,rvalue)-1; 
     if (slot_l == inner->slotuse || slot_r ==-1){
       return 0; //no keys in this node
     }
@@ -1430,10 +1455,12 @@ private:
 
     int sum=0;
     for (int i=slot_l+1; i<=slot_r; i++){
-      sum += getChildKeyUse(inner, i);
+      sum += getChildKeyuse(inner, i);
     }
-    sum += rangeQueryRecursive(inner->childid[slot_l], lvalue, slotkey[slot_l]);
-    sum += rangeQueryRecursive(inner->childid[slot_r+1], slotkey[slot_r], rvalue);
+    sum += rangeQueryRecursive(inner->childid[slot_l], lvalue, 
+      inner->slotkey[slot_l]);
+    sum += rangeQueryRecursive(inner->childid[slot_r+1], 
+      inner->slotkey[slot_r], rvalue);
     return sum;
   }
 
@@ -2051,6 +2078,7 @@ private:
   }
 
   //! Newly added. Rewrite version of insert_descend
+  //! Question: slot cannot be in inner?
   std::pair<iterator, bool> insert_descend_rewrite(node *n, 
                                            const key_type &key,
                                            const value_type &value,
@@ -2075,6 +2103,7 @@ private:
         inner->key_counter++;
       }
 
+      //Newly added comment. Some child of node n splits, n needs updating.
       if (newchild) {
         TLX_BTREE_PRINT("BTree::insert_descend newchild"
                         << " with key " << newkey << " node " << newchild
@@ -2118,16 +2147,51 @@ private:
             split->childid[0] = newchild;
             *splitkey = newkey;
 
+            //Newly added
+            updateKeyCounter(inner);
+            updateKeyCounter(split);
+
             return r;
           } else if (slot >= inner->slotuse + 1) {
             // in case the insert slot is in the newly create split
             // node, we reuse the code below.
+            // Newly added comment. above means use the 2 copy_backword()
+            // treat newinner as inner
 
             slot -= inner->slotuse + 1;
+            //Newly added. Update inner here
+            updateKeyCounter(inner);
+
             inner = static_cast<InnerNode *>(*splitnode);
             TLX_BTREE_PRINT("BTree::insert_descend switching to "
                             "splitted node "
                             << inner << " slot " << slot);
+            /*
+            //Newly added. Copied code from below. Here we need to split inner.
+            // move items and put pointer to child node into correct slot
+            TLX_BTREE_ASSERT(slot >= 0 && slot <= inner->slotuse);
+
+            std::copy_backward(inner->slotkey + slot,
+                              inner->slotkey + inner->slotuse,
+                              inner->slotkey + inner->slotuse + 1);
+            std::copy_backward(inner->childid + slot,
+                              inner->childid + inner->slotuse + 1,
+                              inner->childid + inner->slotuse + 2);
+
+            inner->slotkey[slot] = newkey;
+            inner->childid[slot + 1] = newchild;
+            inner->slotuse++;
+
+            updateKeyCounter(oldinner);
+            updateKeyCounter(inner);
+
+            return r;
+            */         
+          }
+          //Newly added
+          else{ //slot in the left half
+            InnerNode *split = static_cast<InnerNode *>(*splitnode);
+            updateKeyCounter(split);
           }
         }
 
@@ -2144,7 +2208,9 @@ private:
         inner->slotkey[slot] = newkey;
         inner->childid[slot + 1] = newchild;
         inner->slotuse++;
+        updateKeyCounter(inner);
       }
+      //Newly added comment. Here the key is not splitted.
 
       return r;
     } else // n->is_leafnode() == true
@@ -2225,7 +2291,10 @@ private:
   //! the new nodes and it's insertion key in the two parameters. Requires the
   //! slot of the item will be inserted, so the nodes will be the same size
   //! after the insert.
-  //! Newly added. Update key_counter when splitting
+  //! Newly added. Do not update key_counter here.
+  //! The to be inserted slot is not inserted here. slot is no use here.
+  //! After function call, 32-slotuse node splits into 16+15, 1 slot will be 
+  //! moved upward as splitkey.
   void split_inner_node(InnerNode *inner, key_type *out_newkey,
                         node **out_newinner, unsigned int addslot) {
     TLX_BTREE_ASSERT(inner->is_full());
@@ -2259,12 +2328,15 @@ private:
 
     inner->slotuse = mid;
 
-    //Newly added. Update the newly splitted nodes.
-    updateKeyCounter(newinner);
-    updateKeyCounter(inner);
+    //Newly added comment.
+    //Shouldn't update it ere. The new key has not been inserted
 
     *out_newkey = inner->key(mid);
     *out_newinner = newinner;
+
+    //Newly added comment.
+    //Shouldn't update it ere. The new key has not been inserted
+    //updateKeyCounter(newinner);
   }
 
   //! Newly added. A method to update the node by adding up key_counter of its
@@ -2279,7 +2351,7 @@ private:
 
   //! Newly added. Helper to get the Key usage of child.
   //! Discussing problems of leaf or inner
-  int getChildKeyuse(InnerNode *inner, int slot){
+  int getChildKeyuse(InnerNode *inner, int slot) const{
     if (inner->childid[slot]->is_leafnode()){
       return inner->childid[slot]->slotuse;
     }

@@ -1,11 +1,14 @@
 main: main.cpp *.h die.cc
-	g++ -DTEST main.cpp die.cc -o main
+	g++ main.cpp die.cc -o main
 
-.PHONY: test
+test: main.cpp *.h die.cc
+	g++ -DTEST main.cpp die.cc -o test
 
-test: test_main
+.PHONY: debug
+
+debug: test_main
 
 test_main: test_main.cpp *.h die.cc
 	g++ -DTEST -g test_main.cpp die.cc -o test_main
 clean:
-	rm -f main test_main
+	rm -f main test_main test
