@@ -1400,6 +1400,43 @@ private:
     }
   }
 
+//Newly added. RangeQuery method
+public:
+  //! Newly added. Search in the interval [lvalue,rvalue).
+  //! Return the number of keys in this interval
+  int rangeQuery(int lvalue, int rvalue){
+    return rangeQueryRecursive(root_, lvalue, rvalue);
+  }
+
+private:
+  //! Newly added. Recursivly implement rangeQuery
+  int rangeQueryRecursive(node *n, int lvalue, int rvalue){
+    if(n->is_leafnode()){
+      int l = n->find_lower(lvalue);
+      int r = n->find_lower(rvalue);
+      return r-l;
+    }
+
+    InnerNode *inner = static_cast<InnerNode *>(n);
+    int slot_l = inner->find_lower(lvalue);
+    int slot_r = inner->find_lower(rvalue)-1; 
+    if (slot_l == inner->slotuse || slot_r ==-1){
+      return 0; //no keys in this node
+    }
+
+    if (slot_l > slot_r){ // the searched interval is covered in one child
+      return rangeQueryRecursive(inner->childid[slot_l], lvalue, rvalue);
+    }
+
+    int sum=0;
+    for (int i=slot_l+1; i<=slot_r; i++){
+      sum += getChildKeyUse(inner, i);
+    }
+    sum += rangeQueryRecursive(inner->childid[slot_l], lvalue, slotkey[slot_l]);
+    sum += rangeQueryRecursive(inner->childid[slot_r+1], slotkey[slot_r], rvalue);
+    return sum;
+  }
+
   //! \}
 
 public:

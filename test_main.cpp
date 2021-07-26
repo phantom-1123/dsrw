@@ -25,5 +25,8 @@ int main(){
     nmap.insertRewrite(std::make_pair(2, 15));
     output(nmap);
     return 0;
+    tlx::BTree<int,int,int> tree;
+    tree.find_upper(4);
+    tree.find_lower()
 
 }

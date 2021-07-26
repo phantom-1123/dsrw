@@ -1,68 +1,63 @@
 #include <iostream>
+#include <fstream>
+#include <cstdio>
 
 #ifdef TEST
-#include <fstream>
-#define IN fin
-#define OUT fout
-#else
-#define IN std::cin
-#define OUT std::cout
+const char input_file[1024]="testcase/2/4.in";
+const char out_std_file[1024]="testcase/2/4.out";
+const char out_file[1024]="testcase/2/test.out";
+
+void checker(){
+    std::string t,ans,ans2;
+	int i;
+	freopen(out_file,"r",stdin);
+	char c;
+	while(scanf("%c",&c)!=EOF) ans+=c;
+	fclose(stdin);
+	freopen(out_std_file,"r",stdin);
+	while(scanf("%c",&c)!=EOF) ans2+=c;;
+    //freopen("/dev/console", "r", stdin);
+    freopen("testcase/2/result.txt", "w", stdout);
+	fclose(stdin);
+	if(ans.size()!=ans2.size()){std::cout<<"NO\n";return ;}
+	for(i=0;i<ans.size();i++)
+		if(ans[i]!=ans2[i]){std::cout<<"NO\n";return ;}
+	std::cout<<"YES\n";
+}
 #endif //TEST
 
 #include "btree_map.h"
 
-void run_part1 (std::istream & input, std::ostream &output){
-    tlx::btree_map<int, int> nmap;
-    int n, m, p, q;
-    input >> n >>m >>p >>q;
-    for (int i=1;i<=n;i++){
-        int key, value;
-        input >> key >> value;
-        nmap.insert(std::make_pair(key,value));
-    }
-
-    for (int i=1;i<=m;i++){
-        int key;
-        input >> key;
-        auto itr = nmap.find(key);
-        if (itr!=nmap.end())
-            output << itr->second << std::endl;
-        else
-            output << "NOT FOUND" << std::endl;
-    }
-
-    for (int i=1;i<=p;i++){
-        int key,value;
-        input >> key >> value;
-        nmap.erase(key);
-        nmap.insert(std::make_pair(key,value));
-    }
-
-    for (int i=1;i<=q;i++){
-        int lvalue,rvalue;
-        input >> lvalue >> rvalue;
-        int count=0;
-        auto itr_end=nmap.end();
-        for (int k=lvalue; k<rvalue;k++){
-            if (itr_end!=nmap.find(k))
-                count++;
-        }
-        output<<count<<std::endl;
-    }
-}
 
 int main(){
-    //part1
-    #ifdef TEST
-        std::ifstream fin("test.in");
-        std::ofstream fout("test_ans.out");
-    #endif //TEST
+#ifdef TEST
+    freopen("testcase/1/test.out", "w", stdout);
+    freopen(input_file,"r", stdin);
+#endif
+    //part2
+    int n, m;
+    std::scanf("%d", &n);
+    std::scanf("%d", &m);
+    tlx::btree_map<int, int> nmap;
+    for(int i=1; i<=n; i++){
+        int key, value;
+        std::scanf("%d", &key);
+        std::scanf("%d", &value);
+        nmap.insertRewrite(std::make_pair(key,value));
+    }
+    for (int i=1; i<=m; i++){
+        int lvalue, rvalue;
+        std::scanf("%d", &lvalue);
+        std::scanf("%d", &rvalue);
+        std::printf("%d\n", nmap.rangeQuery(lvalue, rvalue));
+    }
 
-    run_part1(IN,OUT);
-    
-    #ifdef TEST
-        fout.close();
-    #endif //TEST
+#ifdef TEST
+    //freopen("/dev/console", "r", stdin);
+    fclose(stdin);
+    fclose(stdout);
+    checker();
+#endif
 
     return 0;
 }

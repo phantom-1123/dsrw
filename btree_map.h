@@ -345,6 +345,12 @@ public:
     return tree_.equal_range(key);
   }
 
+  //! Newly added. Search in the interval [lvalue,rvalue).
+  //! Return the number of keys in this interval
+  int rangeQuery(int lvalue, int rvalue) const{
+    return tree_.rangeQuery(lvalue, rvalue);
+  }
+
   //! \}
 
 public:
