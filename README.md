@@ -33,7 +33,7 @@ q = 1e1
 
 ___
 
-# Part II 50pts
+# Part II 40pts
 
 ddl 8.1
 
