@@ -2,7 +2,7 @@ main: main.cpp *.h die.cc
 	g++ main.cpp die.cc -o main
 
 test: main.cpp *.h die.cc
-	g++ -DTEST main.cpp die.cc -o text
+	g++ -DTEST main.cpp die.cc -o test
 
 .PHONY: debug
 
