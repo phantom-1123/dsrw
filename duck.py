@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import random
+import sys
 import time
 
 from tqdm import tqdm
@@ -28,7 +29,7 @@ ranges_right = list(map(lambda x: random.randint(
 
 ranges = list(zip(ranges_left, ranges_right))
 
-with open('test.in', 'w') as f:
+with open(sys.argv[1], 'w') as f:
     f.write(f'{N} {M} {P} {Q}\n')
     for k, v in zip(keys, values):
         f.write(f'{k} {v}\n')
@@ -61,7 +62,7 @@ range_results = list(map(lambda x: range_search(*x), tqdm(ranges)))
 toc = time.time()
 print(f'{toc - tic:.2f}s')
 
-with open('test.out', 'w') as f:
+with open(sys.argv[2], 'w') as f:
     for value in point_results:
         f.write(f'{value}\n')
     for ans in range_results:
