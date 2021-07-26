@@ -3,9 +3,6 @@
 
 import random
 import sys
-import time
-
-from tqdm import tqdm
 
 INT_RANGE = 2147483648
 RANGE_LIMIT = INT_RANGE >> 2
