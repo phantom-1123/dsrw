@@ -4,7 +4,7 @@
 
 #ifdef TEST
 const char input_file[1024]="testcase/1.in";
-const char out_std_file[1024]="testcase/1.out";
+const char out_std_file[1024]="testcase/1.out"; //changed to own version
 const char out_file[1024]="testcase/test.out";
 
 void checker(){

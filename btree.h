@@ -354,14 +354,20 @@ public:
     auto ptr=leaf;
     //std::cout << get_stats().leaves<<std::endl;
     //std::cout << get_stats().size<<std::endl;
-    int sum=0;
+    //int sum=0;
     for (int i=1;i<=get_stats().leaves;i++){
-      std::cout << ptr->slotuse <<" ";
-      sum += ptr->slotuse;
+      std::cout <<"leaf "<<i<<" : "<< ptr->slotuse <<" slots used\n";
+      //newly added: print leaf keys
+      //sum += ptr->slotuse;
+      for(int j=0;j<ptr->slotuse;j++){
+        //std::cout <<ptr->key(j)<<std::endl;
+        std::cout <<ptr->key(j)<<" ";
+      }
+      std::cout << std::endl;
       ptr = ptr -> next_leaf;
     }
-    std::cout << std::endl;
-    std::cout <<sum<<" sum == size? "<< (get_stats().size==sum) <<std::endl;
+    //std::cout << std::endl;
+    //std::cout <<sum<<" sum == size? "<< (get_stats().size==sum) <<std::endl;
   }
 #endif //TEST
 
@@ -1434,7 +1440,11 @@ public:
 
 private:
   //! Newly added. Recursivly implement rangeQuery
+  //! changed. The interval stored is (,]
   int rangeQueryRecursive(node *n, int lvalue, int rvalue) const{
+    if (lvalue >= rvalue){
+      return 0;
+    }
     if(n->is_leafnode()){
       LeafNode *leaf = static_cast<LeafNode *>(n);
       int l = find_lower(leaf,lvalue);
@@ -1445,10 +1455,13 @@ private:
     InnerNode *inner = static_cast<InnerNode *>(n);
     int slot_l = find_lower(inner,lvalue);
     int slot_r = find_lower(inner,rvalue)-1; 
-    if (slot_l == inner->slotuse || slot_r ==-1){
-      return 0; //no keys in this node
+    if (slot_l == inner->slotuse ){ //bug, two ends need considering
+      return rangeQueryRecursive(inner->childid[slot_l],lvalue,rvalue);
     }
-
+    //changed.
+    if (slot_r ==-1){ 
+      return rangeQueryRecursive(inner->childid[0],lvalue,rvalue);
+    }
     if (slot_l > slot_r){ // the searched interval is covered in one child
       return rangeQueryRecursive(inner->childid[slot_l], lvalue, rvalue);
     }
@@ -1457,10 +1470,14 @@ private:
     for (int i=slot_l+1; i<=slot_r; i++){
       sum += getChildKeyuse(inner, i);
     }
-    sum += rangeQueryRecursive(inner->childid[slot_l], lvalue, 
-      inner->slotkey[slot_l]);
-    sum += rangeQueryRecursive(inner->childid[slot_r+1], 
-      inner->slotkey[slot_r], rvalue);
+    //sum += rangeQueryRecursive(inner->childid[slot_l], lvalue, 
+    // inner->slotkey[slot_l]);
+    //sum += rangeQueryRecursive(inner->childid[slot_r+1], 
+    //  inner->slotkey[slot_r], rvalue);
+
+    //changed. Don't change the interval
+    sum += rangeQueryRecursive(inner->childid[slot_l], lvalue, rvalue);
+    sum += rangeQueryRecursive(inner->childid[slot_r+1], lvalue, rvalue);
     return sum;
   }
 
@@ -1861,15 +1878,16 @@ private:
       newroot->slotuse = 1;
 
       root_ = newroot;
+
+      //Newly added. Update the key_counter of the new root
+      //bug! root_ may be a leaf_node
+      InnerNode* inner_root = static_cast<InnerNode *> (root_);
+      inner_root->key_counter = stats_.size;
     }
 
     // increment size if the item was inserted
     if (r.second)
       ++stats_.size;
-
-    //Newly added. Update the key_counter of the new root
-    InnerNode* inner_root = static_cast<InnerNode *> (root_);
-    inner_root->key_counter = stats_.size;
 
 #ifdef TLX_BTREE_DEBUG
     if (debug)
@@ -1910,15 +1928,17 @@ private:
       newroot->slotuse = 1;
 
       root_ = newroot;
+
+      //Newly added. Update the key_counter of the new root
+      InnerNode * inner_root = static_cast<InnerNode *>(root_);
+      inner_root->key_counter = stats_.size;
     }
 
     // increment size if the item was inserted
     if (r.second)
       ++stats_.size;
 
-    //Newly added. Update the key_counter of the new root
-    InnerNode * inner_root = static_cast<InnerNode *>(root_);
-    inner_root->key_counter = stats_.size;
+    
 
 #ifdef TLX_BTREE_DEBUG
     if (debug)
