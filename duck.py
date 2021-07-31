@@ -26,7 +26,7 @@ ranges_right = list(map(lambda x: random.randint(
 
 ed_ranges_left = random.choices(range(-INT_RANGE, INT_RANGE), k=E)
 ed_ranges_right = list(map(lambda x: random.randint(
-    x, min(INT_RANGE - 1, x + RANGE_LIMIT)), ranges_left))
+    x, min(INT_RANGE - 1, x + RANGE_LIMIT)), ed_ranges_left))
 
 init_ops = [f'i {key} {value}\n' for key, value in zip(init_keys, init_values)]
 insert_ops = [f'i {key} {value}\n' for key, value in zip(keys, values)]
