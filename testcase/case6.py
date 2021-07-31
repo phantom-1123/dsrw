@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 R = 2
-I = 0
-N = int(1e8)
-M = int(1e4)
+I = int(2e7)
+N = 0
+M = int(2e5)
 E = 1
